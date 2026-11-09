@@ -445,6 +445,7 @@ func (peer *Peer) RoutineSequentialReceiver(maxBatchSize int) {
 			return
 		}
 		elemsContainer.Lock()
+		hooks := device.packetHooks.Load()
 		validTailPacket := -1
 		dataPacketReceived := false
 		rxBytesLen := uint64(0)
@@ -483,6 +484,9 @@ func (peer *Peer) RoutineSequentialReceiver(maxBatchSize int) {
 					continue
 				}
 				elem.packet = elem.packet[:length]
+				if hooks != nil && hooks.Inbound != nil && !hooks.Inbound(peer.handshake.remoteStatic, elem.packet) {
+					continue
+				}
 				src := elem.packet[IPv4offsetSrc : IPv4offsetSrc+net.IPv4len]
 				if device.allowedips.Lookup(src) != peer {
 					device.log.Verbosef("IPv4 packet with disallowed source address from %v", peer)
@@ -500,6 +504,9 @@ func (peer *Peer) RoutineSequentialReceiver(maxBatchSize int) {
 					continue
 				}
 				elem.packet = elem.packet[:length]
+				if hooks != nil && hooks.Inbound != nil && !hooks.Inbound(peer.handshake.remoteStatic, elem.packet) {
+					continue
+				}
 				src := elem.packet[IPv6offsetSrc : IPv6offsetSrc+net.IPv6len]
 				if device.allowedips.Lookup(src) != peer {
 					device.log.Verbosef("IPv6 packet with disallowed source address from %v", peer)
