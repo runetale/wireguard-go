@@ -277,6 +277,11 @@ func (device *Device) RoutineReadFromTUN() {
 			if peer == nil {
 				continue
 			}
+			if hooks := device.packetHooks.Load(); hooks != nil && hooks.Outbound != nil {
+				if !hooks.Outbound(peer.handshake.remoteStatic, elem.packet) {
+					continue
+				}
+			}
 			elemsForPeer, ok := elemsByPeer[peer]
 			if !ok {
 				elemsForPeer = device.GetOutboundElementsContainer()

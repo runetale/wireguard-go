@@ -89,6 +89,9 @@ type Device struct {
 	ipcMutex sync.RWMutex
 	closed   chan struct{}
 	log      *Logger
+
+	// packetHooks are the hooks set by SetPacketHooks, or nil.
+	packetHooks atomic.Pointer[PacketHooks]
 }
 
 // deviceState represents the state of a Device.
